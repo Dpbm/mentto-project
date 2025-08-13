@@ -174,10 +174,6 @@ const OKRDetail = () => {
 		return progress;
 	};
 
-	const mergeFormDataWithOKR = (data: OKRFormData) => {
-		setOkr({ ...okr, ...data });
-	};
-
 	const onSubmit = async (data: OKRFormData) => {
 		setIsSaving(true);
 		try {
@@ -213,12 +209,10 @@ const OKRDetail = () => {
 					title: 'Success',
 					description: 'OKR updated successfully!',
 				});
-				setIsEditing(false);
 
-				mergeFormDataWithOKR({
-					...partialData,
-					keyResults: data.keyResults,
-				});
+				await fetchOKR();
+
+				setIsEditing(false);
 			}
 		} catch (error) {
 			toast({
