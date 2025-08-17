@@ -204,16 +204,28 @@ const OKRDetail = () => {
 					description: error.message,
 					variant: 'destructive',
 				});
-			} else {
-				toast({
-					title: 'Success',
-					description: 'OKR updated successfully!',
-				});
-
-				await fetchOKR();
-
-				setIsEditing(false);
+				return;
 			}
+
+			const user = await supabase.auth.getUser();
+
+			Promise.all([
+				fetchOKR,
+				supabase.functions.invoke('send-okr-notification', {
+					body: JSON.stringify({
+						userEmail: user.data.user.email,
+						okrTitle: data.title,
+						action: 'updated',
+					}),
+				}),
+			]);
+
+			toast({
+				title: 'Success',
+				description: 'OKR updated successfully!',
+			});
+
+			setIsEditing(false);
 		} catch (error) {
 			toast({
 				title: 'Error',
@@ -235,13 +247,24 @@ const OKRDetail = () => {
 					description: error.message,
 					variant: 'destructive',
 				});
-			} else {
-				toast({
-					title: 'Success',
-					description: 'OKR deleted successfully!',
-				});
-				navigate('/');
+
+				return;
 			}
+
+			const user = await supabase.auth.getUser();
+			await supabase.functions.invoke('send-okr-notification', {
+				body: JSON.stringify({
+					userEmail: user.data.user.email,
+					okrTitle: okr?.title,
+					action: 'deleted',
+				}),
+			});
+
+			toast({
+				title: 'Success',
+				description: 'OKR deleted successfully!',
+			});
+			navigate('/');
 		} catch (error) {
 			toast({
 				title: 'Error',

@@ -181,13 +181,22 @@ const NewOKR = () => {
 					description: error.message,
 					variant: 'destructive',
 				});
-			} else {
-				toast({
-					title: 'Success',
-					description: 'OKR created successfully!',
-				});
-				navigate('/');
+				return;
 			}
+
+			await supabase.functions.invoke('send-okr-notification', {
+				body: JSON.stringify({
+					userEmail: user.data.user.email,
+					okrTitle: data.title,
+					action: 'created',
+				}),
+			});
+
+			toast({
+				title: 'Success',
+				description: 'OKR created successfully!',
+			});
+			navigate('/');
 		} catch (error) {
 			toast({
 				title: 'Error',
